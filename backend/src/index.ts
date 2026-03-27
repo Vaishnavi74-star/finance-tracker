@@ -19,7 +19,7 @@ async function main() {
         fetch: app.fetch,
         port: (process.env.PORT || 3000) as number
     });
-a
+
     const exitHandler = () => {
         if (server) {
             server.close(() => {
