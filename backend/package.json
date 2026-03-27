@@ -12,7 +12,7 @@
         "dbGenerate": "cross-env NODE_ENV=development prisma generate",
         "db:generate": "cross-env NODE_ENV=development prisma generate",
         "typecheck": "tsc --noEmit",
-        "build": "tsc",
+        "build": "prisma generate && tsc"
         "eslint": "eslint . --ext .ts,.tsx --max-warnings 0",
         "prettier": "prettier . --write --ignore-unknown"
     },
