@@ -1,0 +1,160 @@
+// This is your Prisma schema file,
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Auth models
+model User {
+  id                    String                 @id @default(uuid())
+  email                 String                 @unique
+  name                  String?
+  currency              String?                @default("INR")
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  isDeleted             Boolean                @default(false)
+  identities            UserIdentity[]
+  transactions          Transaction[]
+  budgets               Budget[]
+  savingsGoals          SavingsGoal[]
+  recurringTransactions RecurringTransaction[]
+  categories            Category[]
+  notifications         Notification[]
+
+  @@index([email])
+}
+
+model UserIdentity {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider   String // 'Google', 'GitHub', 'EmailPassword', 'PhoneOTP', etc.
+  providerId String // Provider's unique user ID (or email for email/password)
+  metadata   Json? // Provider-specific data (passwordHash, tokens, profile data, etc.)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  isDeleted  Boolean  @default(false)
+
+  @@unique([provider, providerId])
+  @@index([userId])
+}
+
+model Otp {
+  id         String   @id @default(uuid())
+  identifier String // Phone number or email address
+  type       String // 'phone' or 'email'
+  otp        String // Hashed OTP
+  expiresAt  DateTime
+  attempts   Int      @default(0)
+  verified   Boolean  @default(false)
+  purpose    String? // 'login', 'registration', 'password_reset', '2fa', etc.
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  isDeleted  Boolean  @default(false)
+
+  @@index([identifier, type])
+  @@index([expiresAt])
+  @@index([identifier, type, verified])
+}
+
+model Transaction {
+  id          Int      @id @default(autoincrement())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  amount      Float
+  type        String // 'income' or 'expense'
+  category    String
+  date        DateTime
+  description String
+  recurringId Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  isDeleted   Boolean  @default(false)
+
+  @@index([userId])
+  @@index([category])
+  @@index([date])
+}
+
+model Budget {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  category  String
+  limit     Float
+  period    String // 'monthly' or 'weekly'
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isDeleted Boolean  @default(false)
+
+  @@index([userId])
+}
+
+model SavingsGoal {
+  id            Int      @id @default(autoincrement())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  name          String
+  targetAmount  Float
+  currentAmount Float    @default(0)
+  deadline      DateTime
+  icon          String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  isDeleted     Boolean  @default(false)
+
+  @@index([userId])
+}
+
+model RecurringTransaction {
+  id          Int      @id @default(autoincrement())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  amount      Float
+  type        String // 'income' or 'expense'
+  category    String
+  frequency   String // 'daily', 'weekly', 'monthly', 'yearly'
+  nextDate    DateTime
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  isDeleted   Boolean  @default(false)
+
+  @@index([userId])
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  icon      String
+  color     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isDeleted Boolean  @default(false)
+
+  @@index([userId])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  type      String   // 'budget_alert', 'goal_milestone', 'recurring_reminder', 'general'
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isDeleted Boolean  @default(false)
+
+  @@index([userId])
+  @@index([isRead])
+}
