@@ -173,3 +173,5 @@ Give a ⭐ if you like this project!
 - Analytics dashboard  
 - Mobile app  
 - AI insights  
+# author
+Vaishnavi Deshpande
