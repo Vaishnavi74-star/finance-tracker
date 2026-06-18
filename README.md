@@ -1,4 +1,4 @@
-# 💰 Finance Tracker App
+# 💰 Finance Tracker Apps
 
 🔗 Live Demo: https://finance-tracker-six-rosy.vercel.app
 
